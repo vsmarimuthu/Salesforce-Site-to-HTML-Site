@@ -36,36 +36,37 @@
   </div>
 
   <h2>Welcome to Our Support Portal</h2>
-  <p>Click the chat button to speak with an agent.</p>
-<script type='text/javascript' 
-    src='https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038/assets/js/bootstrap.min.js'>
-</script>
+<!-- Intentional error like client has -->
 <script type='text/javascript'>
-    (function tryInit() {
-        if (typeof embeddedservice_bootstrap !== 'undefined' && 
-            typeof embeddedservice_bootstrap.init === 'function') {
-            try {
-                embeddedservice_bootstrap.settings.language = 'en_US';
-                embeddedservice_bootstrap.init(
-                    '00DO100000A0xK5',
-                    'Web_Deployment_2',
-                    'https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038',
-                    {
-                        scrt2URL: 'https://first-source--di1.sandbox.my.salesforce-scrt.com'
-                    }
-                );
-				  console.log('Came here >>>');
-            } catch (err) {
-                console.error('Error loading Embedded Messaging: ', err);
-            }
-        } else {
-            setTimeout(tryInit, 500);
+    // This mimics the client's error: document.getElementsByClassName(...)[0] is undefined
+    document.getElementsByClassName('nonExistentClass')[0].style.display = 'none';
+</script>
+
+<script type='text/javascript'>
+    function initEmbeddedMessaging() {
+        try {
+            embeddedservice_bootstrap.settings.language = 'en_US';
+            embeddedservice_bootstrap.init(
+                '00DO100000A0xK5',
+                'Web_Deployment_2',
+                'https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038',
+                {
+                    scrt2URL: 'https://first-source--di1.sandbox.my.salesforce-scrt.com'
+                }
+            );
+        } catch (err) {
+            console.error('Error loading Embedded Messaging: ', err);
         }
-    })();
+    }
+</script>
+<script type='text/javascript' 
+    src='https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038/assets/js/bootstrap.min.js' 
+    onload='initEmbeddedMessaging()'>
 </script>
 	
 </body> 
 </html>
+
 
 
 
