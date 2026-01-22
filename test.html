@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <title>Home - Support Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px;
+      margin-right: 10px;
+      cursor: pointer;
+      background-color: #eee;
+      border-radius: 5px 5px 0 0;
+      text-decoration: none;
+      color: black;
+    }
+    .tab.active {
+      background-color: #ddd;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs">
+    <a href="index.html" class="tab active">Home</a>
+    <a href="web-to-case.html" class="tab">Submit Case</a>
+  </div>
+
+  <h2>Welcome to Our Support Portal</h2>
+<!-- Intentional error like client has -->
+<script type='text/javascript'>
+    function initEmbeddedMessaging() {
+  
+        embeddedservice_bootstrap.settings.language = 'en_US';
+        embeddedservice_bootstrap.init(
+            '00DO100000A0xK5',
+            'Web_Deployment_2',
+            'https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038',
+            {
+                scrt2URL: 'https://first-source--di1.sandbox.my.salesforce-scrt.com'
+            }
+        );
+    }
+</script>
+<script type='text/javascript' 
+    src='https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038/assets/js/bootstrap.min.js' 
+    onload='initEmbeddedMessaging()'>
+</script>
+	
+</body> 
+</html>
+
+
+
+
+
+
+
+
+
+
+
