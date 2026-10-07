@@ -38,23 +38,24 @@
   <h2>Welcome to Our Support Portal</h2>
 <!-- Intentional error like client has -->
 <script type='text/javascript'>
-    function initEmbeddedMessaging() {
-  
-        embeddedservice_bootstrap.settings.language = 'en_US';
-        embeddedservice_bootstrap.init(
-            '00DO100000A0xK5',
-            'Web_Deployment_2',
-            'https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038',
-            {
-                scrt2URL: 'https://first-source--di1.sandbox.my.salesforce-scrt.com'
-            }
-        );
-    }
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US';
+			embeddedservice_bootstrap.init(
+				'00DS900000JusM9',
+				'Student_Support_Chat',
+				'https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158',
+				{
+					scrt2URL: 'https://arden1--maridev.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
 </script>
-<script type='text/javascript' 
-    src='https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038/assets/js/bootstrap.min.js' 
-    onload='initEmbeddedMessaging()'>
-</script>
+<script type='text/javascript' src='https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
 	
 </body> 
 </html>
