@@ -1,68 +1,71 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
   <title>Home - Support Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    .tabs {
-      display: flex;
-      margin-bottom: 20px;
-    }
+    .tabs { display: flex; margin-bottom: 20px; }
     .tab {
-      padding: 10px 20px;
-      margin-right: 10px;
-      cursor: pointer;
-      background-color: #eee;
-      border-radius: 5px 5px 0 0;
-      text-decoration: none;
-      color: black;
+      padding: 10px 20px; margin-right: 10px; cursor: pointer;
+      background-color: #eee; border-radius: 5px 5px 0 0;
+      text-decoration: none; color: black;
     }
-    .tab.active {
-      background-color: #ddd;
-      font-weight: bold;
+    .tab.active { background-color: #ddd; font-weight: bold; }
+
+    /* Placeholder shown in the chat button's spot until Salesforce chat is ready */
+    #chat-loading {
+      position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
+      border-radius: 50%; background: #032d60; display: flex;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3); z-index: 9999;
     }
+    #chat-loading .spinner {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.35); border-top-color: #fff;
+      animation: chat-spin .9s linear infinite;
+    }
+    @keyframes chat-spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Tabs -->
-
-
   <h2>Welcome to Our Support Portal</h2>
-<!-- Intentional error like client has -->
-<script type='text/javascript'>
-	function initEmbeddedMessaging() {
-		try {
-			embeddedservice_bootstrap.settings.language = 'en_US';
-			embeddedservice_bootstrap.init(
-				'00DS900000JusM9',
-				'Student_Support_Chat',
-				'https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158',
-				{
-					scrt2URL: 'https://arden1--maridev.sandbox.my.salesforce-scrt.com'
-				}
-			);
-		} catch (err) {
-			console.error('Error loading Embedded Messaging: ', err);
-		}
-	};
-</script>
-<script type='text/javascript' src='https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
 
-	
-</body> 
+  <!-- Loading placeholder: removed automatically when the chat button is ready -->
+  <div id="chat-loading" role="status" aria-label="Chat is loading">
+    <div class="spinner"></div>
+  </div>
+
+  <script type="text/javascript">
+    // Must be registered before the Salesforce bootstrap script loads.
+    window.addEventListener("onEmbeddedMessagingReady", function () {
+      var el = document.getElementById("chat-loading");
+      if (el) { el.remove(); }
+    });
+
+    function initEmbeddedMessaging() {
+      try {
+        embeddedservice_bootstrap.settings.language = 'en_US';
+        embeddedservice_bootstrap.init(
+          '00DS900000JusM9',
+          'Student_Support_Chat',
+          'https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158',
+          {
+            scrt2URL: 'https://arden1--maridev.sandbox.my.salesforce-scrt.com'
+          }
+        );
+      } catch (err) {
+        console.error('Error loading Embedded Messaging: ', err);
+        var el = document.getElementById("chat-loading");
+        if (el) { el.remove(); }
+      }
+    }
+  </script>
+  <script type="text/javascript"
+          src="https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158/assets/js/bootstrap.min.js"
+          onload="initEmbeddedMessaging()"></script>
+
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
