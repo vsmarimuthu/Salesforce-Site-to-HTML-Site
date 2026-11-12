@@ -1,71 +1,139 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
   <title>Home - Support Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    .tabs {
-      display: flex;
-      margin-bottom: 20px;
-    }
+    .tabs { display: flex; margin-bottom: 20px; }
     .tab {
-      padding: 10px 20px;
-      margin-right: 10px;
-      cursor: pointer;
-      background-color: #eee;
-      border-radius: 5px 5px 0 0;
-      text-decoration: none;
-      color: black;
+      padding: 10px 20px; margin-right: 10px; cursor: pointer;
+      background-color: #eee; border-radius: 5px 5px 0 0;
+      text-decoration: none; color: black;
     }
-    .tab.active {
-      background-color: #ddd;
-      font-weight: bold;
+    .tab.active { background-color: #ddd; font-weight: bold; }
+
+    /* 1. Placeholder shown in the chat button's spot until the FAB button is created */
+    #chat-button-loader {
+      position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
+      border-radius: 50%; background: #032d60; display: flex;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3); z-index: 9999;
     }
+    #chat-button-loader .spinner {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.35); border-top-color: #fff;
+      animation: chat-spin .9s linear infinite;
+    }
+
+    /* 2. Overlay shown over the blank white chat window while the conversation connects */
+    #chat-window-loader {
+      position: fixed; bottom: 20px; right: 20px;
+      width: 320px; height: 480px; max-width: calc(100vw - 40px); max-height: calc(100vh - 40px);
+      background: #ffffff; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 10000; font-size: 14px; color: #333;
+    }
+    #chat-window-loader .window-spinner {
+      width: 32px; height: 32px; border-radius: 50%; margin-bottom: 12px;
+      border: 3px solid rgba(3,45,96,.2); border-top-color: #032d60;
+      animation: chat-spin .9s linear infinite;
+    }
+
+    @keyframes chat-spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Tabs -->
-  <div class="tabs">
-    <a href="index.html" class="tab active">Home</a>
-    <a href="web-to-case.html" class="tab">Submit Case</a>
+  <h2>Welcome to Our Support Portal</h2>
+
+  <!-- Button Loader: visible on page load until the chat icon renders -->
+  <div id="chat-button-loader" role="status" aria-label="Chat button is loading">
+    <div class="spinner"></div>
   </div>
 
-  <h2>Welcome to Our Support Portal</h2>
-<!-- Intentional error like client has -->
-<script type='text/javascript'>
+  <!-- Window Loader: covers the blank white screen when user opens chat -->
+  <div id="chat-window-loader" role="status" aria-label="Connecting to support">
+    <div class="window-spinner"></div>
+    <div>Connecting to Student Support...</div>
+  </div>
+
+  <script type="text/javascript">
+    var windowLoaderTimer = null;
+
+    function removeButtonLoader() {
+      var btnLoader = document.getElementById("chat-button-loader");
+      if (btnLoader) { btnLoader.remove(); }
+    }
+
+    function showWindowLoader() {
+      var winLoader = document.getElementById("chat-window-loader");
+      if (winLoader) {
+        winLoader.style.display = "flex";
+        // Fallback: auto-hide after 12 seconds if a network issue prevents events from firing
+        clearTimeout(windowLoaderTimer);
+        windowLoaderTimer = setTimeout(hideWindowLoader, 12000);
+      }
+    }
+
+    function hideWindowLoader() {
+      clearTimeout(windowLoaderTimer);
+      var winLoader = document.getElementById("chat-window-loader");
+      if (winLoader) { winLoader.style.display = "none"; }
+    }
+
+    // Fires when the floating chat button is actually created and sized
+    window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
+      removeButtonLoader();
+    });
+
+    // Fallback in case button creation event is skipped (e.g., outside business hours)
+    window.addEventListener("onEmbeddedMessagingBusinessHoursEnded", function () {
+      removeButtonLoader();
+    });
+
+    // Show window loader as soon as the user clicks the chat icon to maximize it
+    window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
+      showWindowLoader();
+    });
+
+    // Hide window loader once the conversation UI finishes loading
+    window.addEventListener("onEmbeddedMessagingConversationOpened", function () {
+      hideWindowLoader();
+    });
+
+    // Also hide if the user minimizes the chat early or once the first bot message arrives
+    window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
+      hideWindowLoader();
+    });
+    window.addEventListener("onEmbeddedMessagingFirstBotMessageSent", function () {
+      hideWindowLoader();
+    });
+
     function initEmbeddedMessaging() {
-  
+      try {
         embeddedservice_bootstrap.settings.language = 'en_US';
         embeddedservice_bootstrap.init(
-            '00DO100000A0xK5',
-            'Web_Deployment_2',
-            'https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038',
-            {
-                scrt2URL: 'https://first-source--di1.sandbox.my.salesforce-scrt.com'
-            }
+          '00DS900000JusM9',
+          'Student_Support_Chat',
+          'https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158',
+          {
+            scrt2URL: 'https://arden1--maridev.sandbox.my.salesforce-scrt.com'
+          }
         );
+      } catch (err) {
+        console.error('Error loading Embedded Messaging: ', err);
+        removeButtonLoader();
+        hideWindowLoader();
+      }
     }
-</script>
-<script type='text/javascript' 
-    src='https://first-source--di1.sandbox.my.site.com/ESWWebDeployment21745826054038/assets/js/bootstrap.min.js' 
-    onload='initEmbeddedMessaging()'>
-</script>
-	
-</body> 
+  </script>
+  <script type="text/javascript"
+          src="https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158/assets/js/bootstrap.min.js"
+          onload="initEmbeddedMessaging()"
+          onerror="removeButtonLoader()"></script>
+
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
