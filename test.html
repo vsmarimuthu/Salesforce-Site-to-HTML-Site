@@ -6,20 +6,14 @@
   <title>Home - Support Portal</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    .tabs { display: flex; margin-bottom: 20px; }
-    .tab {
-      padding: 10px 20px; margin-right: 10px; cursor: pointer;
-      background-color: #eee; border-radius: 5px 5px 0 0;
-      text-decoration: none; color: black;
-    }
-    .tab.active { background-color: #ddd; font-weight: bold; }
 
-    /* 1. Placeholder shown in the chat button's spot until the FAB button is created */
+    /* 1. Button Loader: sits cleanly in the bottom-right corner until the chat button appears */
     #chat-button-loader {
       position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
       border-radius: 50%; background: #032d60; display: flex;
       align-items: center; justify-content: center;
       box-shadow: 0 2px 8px rgba(0,0,0,.3); z-index: 9999;
+      transition: opacity 0.2s ease;
     }
     #chat-button-loader .spinner {
       width: 22px; height: 22px; border-radius: 50%;
@@ -27,14 +21,16 @@
       animation: chat-spin .9s linear infinite;
     }
 
-    /* 2. Overlay shown over the blank white chat window while the conversation connects */
+    /* 2. Window Loader: dynamically sized to match Salesforce's iframe */
     #chat-window-loader {
-      position: fixed; bottom: 20px; right: 20px;
-      width: 320px; height: 480px; max-width: calc(100vw - 40px); max-height: calc(100vh - 40px);
-      background: #ffffff; border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      position: fixed;
+      background: #ffffff;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,.18);
       display: none; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 10000; font-size: 14px; color: #333;
+      z-index: 100000; font-size: 14px; color: #333;
+      pointer-events: none; /* Allows clicking inside chat even while fading out */
+      transition: opacity 0.25s ease;
     }
     #chat-window-loader .window-spinner {
       width: 32px; height: 32px; border-radius: 50%; margin-bottom: 12px;
@@ -49,18 +45,19 @@
 
   <h2>Welcome to Our Support Portal</h2>
 
-  <!-- Button Loader: visible on page load until the chat icon renders -->
+  <!-- Button Loader -->
   <div id="chat-button-loader" role="status" aria-label="Chat button is loading">
     <div class="spinner"></div>
   </div>
 
-  <!-- Window Loader: covers the blank white screen when user opens chat -->
+  <!-- Window Loader -->
   <div id="chat-window-loader" role="status" aria-label="Connecting to support">
     <div class="window-spinner"></div>
-    <div>Connecting to Student Support...</div>
+    <div>Connecting to Arden Assistant...</div>
   </div>
 
   <script type="text/javascript">
+    var hasOpenedOnce = false;
     var windowLoaderTimer = null;
 
     function removeButtonLoader() {
@@ -68,48 +65,66 @@
       if (btnLoader) { btnLoader.remove(); }
     }
 
-    function showWindowLoader() {
+    function syncLoaderToIframe() {
+      var iframe = document.getElementById("embeddedMessagingFrame");
       var winLoader = document.getElementById("chat-window-loader");
-      if (winLoader) {
-        winLoader.style.display = "flex";
-        // Fallback: auto-hide after 12 seconds if a network issue prevents events from firing
-        clearTimeout(windowLoaderTimer);
-        windowLoaderTimer = setTimeout(hideWindowLoader, 12000);
+      if (!iframe || !winLoader) return;
+
+      var rect = iframe.getBoundingClientRect();
+      if (rect.width > 100 && rect.height > 100) {
+        winLoader.style.top = rect.top + "px";
+        winLoader.style.left = rect.left + "px";
+        winLoader.style.width = rect.width + "px";
+        winLoader.style.height = rect.height + "px";
       }
+    }
+
+    function showWindowLoader() {
+      if (hasOpenedOnce) return; // Only show on the very first chat open
+      hasOpenedOnce = true;
+
+      var winLoader = document.getElementById("chat-window-loader");
+      if (!winLoader) return;
+
+      // Wait 1 animation frame so Salesforce applies its maximized dimensions first
+      requestAnimationFrame(function () {
+        syncLoaderToIframe();
+        winLoader.style.opacity = "1";
+        winLoader.style.display = "flex";
+      });
+
+      // Keep syncing briefly while CSS transitions finish, then auto-hide cleanly
+      var syncInterval = setInterval(syncLoaderToIframe, 100);
+      clearTimeout(windowLoaderTimer);
+      windowLoaderTimer = setTimeout(function () {
+        clearInterval(syncInterval);
+        hideWindowLoader();
+      }, 2200); // Hides smoothly right as Arden Assistant's greeting renders
     }
 
     function hideWindowLoader() {
       clearTimeout(windowLoaderTimer);
       var winLoader = document.getElementById("chat-window-loader");
-      if (winLoader) { winLoader.style.display = "none"; }
+      if (winLoader && winLoader.style.display !== "none") {
+        winLoader.style.opacity = "0";
+        setTimeout(function () {
+          winLoader.style.display = "none";
+        }, 250);
+      }
     }
 
-    // Fires when the floating chat button is actually created and sized
-    window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
-      removeButtonLoader();
-    });
+    // Lifecycle Listeners
+    window.addEventListener("onEmbeddedMessagingButtonCreated", removeButtonLoader);
+    window.addEventListener("onEmbeddedMessagingBusinessHoursEnded", removeButtonLoader);
+    window.addEventListener("onEmbeddedMessagingWindowMaximized", showWindowLoader);
+    window.addEventListener("onEmbeddedMessagingConversationOpened", hideWindowLoader);
+    window.addEventListener("onEmbeddedMessagingFirstBotMessageSent", hideWindowLoader);
+    window.addEventListener("onEmbeddedMessagingWindowMinimized", hideWindowLoader);
 
-    // Fallback in case button creation event is skipped (e.g., outside business hours)
-    window.addEventListener("onEmbeddedMessagingBusinessHoursEnded", function () {
-      removeButtonLoader();
-    });
-
-    // Show window loader as soon as the user clicks the chat icon to maximize it
-    window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
-      showWindowLoader();
-    });
-
-    // Hide window loader once the conversation UI finishes loading
-    window.addEventListener("onEmbeddedMessagingConversationOpened", function () {
-      hideWindowLoader();
-    });
-
-    // Also hide if the user minimizes the chat early or once the first bot message arrives
-    window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
-      hideWindowLoader();
-    });
-    window.addEventListener("onEmbeddedMessagingFirstBotMessageSent", function () {
-      hideWindowLoader();
+    window.addEventListener("unhandledrejection", function (event) {
+      if (event.reason && String(event.reason).includes("Embedded Messaging configuration")) {
+        removeButtonLoader();
+      }
     });
 
     function initEmbeddedMessaging() {
@@ -118,9 +133,9 @@
         embeddedservice_bootstrap.init(
           '00DS900000JusM9',
           'Student_Support_Chat',
-          'https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158',
+          'https://site.com',
           {
-            scrt2URL: 'https://arden1--maridev.sandbox.my.salesforce-scrt.com'
+            scrt2URL: 'https://salesforce-scrt.com'
           }
         );
       } catch (err) {
@@ -131,7 +146,7 @@
     }
   </script>
   <script type="text/javascript"
-          src="https://arden1--maridev.sandbox.my.site.com/ESWStudentSuppo1791393030158/assets/js/bootstrap.min.js"
+          src="https://site.com/assets/js/bootstrap.min.js"
           onload="initEmbeddedMessaging()"
           onerror="removeButtonLoader()"></script>
 
